@@ -1,2 +1,2 @@
 # NRGG
-A Module full of functions and classes that are specific to the Northern Region Geospatial Group's work and analysis
+A Package of modules, classes and functions that are specific to the Northern Region Geospatial Group's work and analysis
