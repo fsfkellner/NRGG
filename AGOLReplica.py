@@ -3,6 +3,7 @@ import urllib
 import requests
 import json
 import time
+import arcpy
 from URLHandling import (
     urlRequest,
     errorMessageGenerator,
@@ -10,7 +11,7 @@ from URLHandling import (
 )
 
 
-def getStatusURLForFeatureServiceReplicaForPhotoAttachments(
+def getStatusURLForAGOLReplica(
         AGOLFeatureServiceName, AGOLFeatureServiceURL, AGOLToken,
         AGOLFeatureServiceLayerNumber, AGOLFeatureServiceObjectIDs):
 
@@ -49,7 +50,7 @@ def getStatusURLForFeatureServiceReplicaForPhotoAttachments(
     return featureServiceReplicaStatusUrl
 
 
-def waitForAGOLFeatureServiceReplica(featureServiceReplicaStatusUrl,
+def waitForAGOLReplica(featureServiceReplicaStatusUrl,
                                      AGOLToken):
     timer = 0
     status = json.loads(

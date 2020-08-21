@@ -1,14 +1,17 @@
 from Python2RESTAPI import Python2RESTAPI
 from URLHandling import (
+    generateAGOLToken,
     urlRequest,
     errorMessageGenerator,
     jsonObjectErrorHandling
 )
 from AGOLReplica import (
-    getStatusURLForFeatureServiceReplicaForPhotoAttachments,
-    waitForAGOLFeatureServiceReplica,
+    getStatusURLForAGOLReplica,
+    waitForAGOLReplica,
     downloadAGOLReplicaInFGDB
 )
-import HelperFunctions
+from HelperFunctions import (
+    listStringJoiner,
+)
 import FSVegSpatial_WalkThroughTools
 from AOIHandlingForAGOL import FeatureClassForAGOLFiltering

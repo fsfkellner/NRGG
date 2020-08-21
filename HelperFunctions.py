@@ -9,15 +9,3 @@ def listStringJoiner(inputList, joiner=","):
     stringJoinedList = joiner.join(
         str(itemFromList) for itemFromList in inputList)
     return stringJoinedList
-
-
-def errorMessageGenerator(textForErrorMessage):
-    '''errorMessageGenerator(string) -> string
-    takes and input string and formats it to boiler-plate
-    error message.
-    '''
-
-    errorText = '''There was an error {}.
-    If you believe there was a mistake
-    entering parameters please try the tool again.'''.format(textForErrorMessage)
-    return errorText

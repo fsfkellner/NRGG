@@ -1,40 +1,42 @@
+import arcpy
+import os
+import zipfile
 
-def unzipAGOLReplicaGDBAndRenameToFSVeg(pathOfZippedReplicaGDB, outputLocation):
+
+def unzipAGOLReplicaGDBAndRenameToFSVeg(
+        pathOfZippedReplicaGDB, outputLocation):
     with zipfile.ZipFile(pathOfZippedReplicaGDB, "r") as zipGDB:
         zipGDB = zipfile.ZipFile(pathOfZippedReplicaGDB, "r")
-        uniqueAGOLGenerateReplicaGDBName = zipGDB.namelist()[0].split(r"/")[0]
+        uniqueAGOLGeneratedReplicaGDBName = zipGDB.namelist()[0].split(r"/")[0]
         zipGDB.extractall(outputLocation)
         arcpy.Rename_management(
-            outputLocation + "/" + uniqueAGOLGenerateReplicaGDBName, "FSVeg_Spatial_WT"
-        )
+            os.path.join(outputLocation, uniqueAGOLGeneratedReplicaGDBName),
+            "FSVeg_Spatial_WT")
 
-def DeleteUneededFiedsFromFinalFeatureclass(finalFeatureClass):
-    listOfFieldsToKeep = []
-    fieldsToDelete = [
-        field.name
-        for field in arcpy.ListFields(finalFeatureClass)
-        if field.name not in listOfFieldsToKeep
-    ]
-    arcpy.DeleteField_management("finalFeatureClass", fieldsToDelete)
 
-def renamePlotsToFSVeg_Spatial_WT_PhotosInGDB(outputLocation):
-    arcpy.env.workspace = outputLocation + "/FSVeg_Spatial_WT.gdb"
-    # I use FC to FC here rather than rename as it allows for all the attachment
-    # files inthe GDB to be called FSVeg_Spatial_WT_Photos and allows for
-    # delteting of fields that Natalie and Renate did now want the end user to see
+def renamePlotsFilesToFSVeg(outputLocation):
+    FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
+    arcpy.env.workspace = FSVegGDBPath
+    # I use FC to FC here rather than rename as it allows
+    # for all the attachment files inthe GDB
+    # to be called FSVeg_Spatial_WT_Photos and allows for
+    # delteting of fields that Natalie and Renate
+    # did now want the end user to see
     arcpy.arcpy.FeatureClassToFeatureClass_conversion(
-        "plots", outputLocation + "/FSVeg_Spatial_WT.gdb", "FSVeg_Spatial_WT_Photos"
-    )
-    
-    arcpy.Delete_management(outputLocation + "/FSVeg_Spatial_WT.gdb/plots")
-    arcpy.Delete_management(outputLocation + "/FSVeg_Spatial_WT.gdb/plots__ATTACH")
-    arcpy.Delete_management(outputLocation + "/FSVeg_Spatial_WT.gdb/plots__ATTACHREL")
+        "plots", FSVegGDBPath,
+        "FSVeg_Spatial_WT_Photos")
 
-def createDictionaryOfFSVegGlobadIDsPlotSettingAndPlotNumber(outputLocation):
+    plotFilesToDelete = ['plots', 'plots__ATTACH', 'plots__ATTACHREL']
+    for plotFile in plotFilesToDelete:
+        arcpy.Delete_management(os.path.join(FSVegGDBPath, plotFile))
+
+
+def createDictOfFSVegIDsAndPlots(outputLocation):
     arcpy.env.workspace = outputLocation + "/FSVeg_Spatial_WT.gdb"
     cursor = arcpy.da.SearchCursor(
-        "FSVeg_Spatial_WT_Photos", ["GlobalID", "pl_setting_id", "plot_number_1"]
-    )
+        "FSVeg_Spatial_WT_Photos",
+        ["GlobalID", "pl_setting_id", "plot_number_1"])
+
     FSVegGlobalIDDictionary = {}
     for row in cursor:
         if row[1] is not None and row[1].isdigit():
@@ -46,17 +48,20 @@ def createDictionaryOfFSVegGlobadIDsPlotSettingAndPlotNumber(outputLocation):
     return FSVegGlobalIDDictionary
 
 
-def writeAttachedPhotosAndMakeDictionaryOfFSVegPhotoNames(
-    outputLocation, FSVegGlobalIDDictionary
-):
-    if os.path.exists(outputLocation + "//FSVeg_Spatial_WT_Photos"):
+def writeAttachedPhotosMakeDictOfPhotoNames(
+        outputLocation, FSVegGlobalIDDictionary):
+    photoFolder = os.path.join(outputLocation, 'FSVeg_Spatial_WT_Photos')
+    FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
+
+    if os.path.exists(photoFolder):
         pass
     else:
-        os.mkdir(outputLocation + "//FSVeg_Spatial_WT_Photos")
-    arcpy.env.workspace = outputLocation + "/FSVeg_Spatial_WT.gdb"
+        os.mkdir(photoFolder)
+    arcpy.env.workspace = FSVegGDBPath
     photoNameDictionary = {}
     with arcpy.da.SearchCursor(
-        "FSVeg_Spatial_WT_Photos__ATTACH", ["DATA", "ATT_NAME", "REL_GLOBALID"]
+        "FSVeg_Spatial_WT_Photos__ATTACH",
+        ["DATA", "ATT_NAME", "REL_GLOBALID"]
     ) as cursor:
         for row in cursor:
             if row[2] in FSVegGlobalIDDictionary:
@@ -67,25 +72,23 @@ def writeAttachedPhotosAndMakeDictionaryOfFSVegPhotoNames(
                     + str(FSVegGlobalIDDictionary[row[2]][1])
                 )
                 attachmentName = row[1].encode('utf-8', 'ignore')
-                stringStartLocation = attachmentName.find("photo_plot")
-                if (
-                    attachmentName[stringStartLocation + 10 : stringStartLocation + 11]
-                    == "-"
-                ):
+                hyphenStart = attachmentName.find("photo_plot")
+                hyphenStart = hyphenStart + 10
+                hyphenEnd = hyphenStart + 1
+                potentialHyphen = attachmentName[
+                    hyphenStart:hyphenEnd]
+                plotNumberStart = hyphenStart + 1
+                plotNumberEnd = hyphenEnd + 1
+                addtionalPlotNumber = attachmentName[
+                    plotNumberStart:plotNumberEnd]
+                if potentialHyphen == '-':
                     filename = fileNumber + "_1.jpg"
                 else:
-                    filename = (
-                        fileNumber
-                        + "_"
-                        + attachmentName[
-                            stringStartLocation + 11 : stringStartLocation + 12
-                        ]
-                        + ".jpg"
-                    )
-                open(
-                    outputLocation + "//FSVeg_Spatial_WT_Photos" + os.sep + filename,
-                    "wb",
-                ).write(attachment.tobytes())
+                    filename = '{}_{}.jpg'.format(
+                        fileNumber, addtionalPlotNumber)
+
+                photoFilePath = os.path.join(photoFolder, filename)
+                open(photoFilePath, "wb",).write(attachment.tobytes())
                 if row[2] not in photoNameDictionary:
                     photoNameDictionary[row[2]] = [filename]
                 else:
@@ -98,17 +101,17 @@ def writeAttachedPhotosAndMakeDictionaryOfFSVegPhotoNames(
                 pass
     return photoNameDictionary
 
-def addPhotoNameFieldAndPopulateFinalFSVegFeatureClass(
-    outputLocation, photoNameDictionary
-):
-    arcpy.env.workspace = outputLocation + "/FSVeg_Spatial_WT.gdb"
+
+def addPhotoNameFieldAndPopulate(
+        outputLocation, photoNameDictionary):
+
+    FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
+    arcpy.env.workspace = FSVegGDBPath
     arcpy.AddField_management(
         "FSVeg_Spatial_WT_Photos", "PhotoNames", "TEXT", "#", "#", 250
     )
-    edit = arcpy.da.Editor(
-        outputLocation + "/FSVeg_Spatial_WT.gdb"
-    )  # dirname of the fc is the db name
-    edit.startEditing(False, False)  # check these setting for your environment
+    edit = arcpy.da.Editor(FSVegGDBPath)
+    edit.startEditing(False, False)
     edit.startOperation()
     cursor = arcpy.da.UpdateCursor(
         "FSVeg_Spatial_WT_Photos", ["GlobalID", "PhotoNames"]
@@ -121,8 +124,9 @@ def addPhotoNameFieldAndPopulateFinalFSVegFeatureClass(
     edit.stopEditing(True)
 
 
-def DeleteUneededFiedsFromFinalFSVegFeatureclass(outputLocation):
-    arcpy.env.workspace = outputLocation + "/FSVeg_Spatial_WT.gdb"
+def deleteFiedsFromFSVegPhotoFeatureClass(outputLocation):
+    FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
+    arcpy.env.workspace = FSVegGDBPath
     listOfFieldsToKeep = [
         "globalid",
         "pl_setting_id",
@@ -137,11 +141,20 @@ def DeleteUneededFiedsFromFinalFSVegFeatureclass(outputLocation):
     ]
     arcpy.DeleteField_management("FSVeg_Spatial_WT_Photos", fieldsToDelete)
 
+
 def deleteFeaturesWithIncorrectSettingIDValues(outputLocation):
-    arcpy.MakeFeatureLayer_management(outputLocation + os.sep + "FSVeg_Spatial_WT.gdb" + os.sep + "FSVeg_Spatial_WT_Photos", "FSVeg_Spatial_WT_Photos")
-    arcpy.SelectLayerByAttribute_management('FSVeg_Spatial_WT_Photos', "NEW_SELECTION", 'PhotoNames IS NULL')
+    FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
+    arcpy.MakeFeatureLayer_management(os.path.join(FSVegGDBPath,
+        "FSVeg_Spatial_WT_Photos"),"FSVeg_Spatial_WT_Photos")
+    arcpy.SelectLayerByAttribute_management('FSVeg_Spatial_WT_Photos',
+        "NEW_SELECTION", 'PhotoNames IS NULL')
     arcpy.DeleteFeatures_management("FSVeg_Spatial_WT_Photos")
 
+
 def alterPlotSettingIDFieldName(outputLocation):
-    arcpy.MakeTableView_management(outputLocation + os.sep + "FSVeg_Spatial_WT.gdb" + os.sep + "FSVeg_Spatial_WT_Photos", "FSVeg_Spatial_WT_PhotosTable")
-    arcpy.AlterField_management("FSVeg_Spatial_WT_PhotosTable", "pl_setting_id", "Setting_ID", "Setting_ID")
+    FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
+    arcpy.MakeTableView_management(os.path.join(
+            FSVegGDBPath, "FSVeg_Spatial_WT_Photos"),
+        "FSVeg_Spatial_WT_PhotosTable")
+    arcpy.AlterField_management("FSVeg_Spatial_WT_PhotosTable",
+        "pl_setting_id", "Setting_ID", "Setting_ID")

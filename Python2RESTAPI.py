@@ -1,40 +1,11 @@
-import os
-import json
 import urllib
+import arcpy
 from HelperFunctions import listStringJoiner
 from URLHandling import (
     urlRequest,
     errorMessageGenerator,
     jsonObjectErrorHandling
 )
-
-
-def generateAGOLToken(AGOLUsername, AGOLPassword):
-    """Generates a Token for use with the REST
-    API for ArcGIS Online
-    """
-    errorText = '''generating an AGOL token.
-      It is likely that you entered an incorrect
-      username or password'''
-
-    errorMessage = errorMessageGenerator(errorText)
-    parameters = urllib.urlencode(
-        {
-            "username": AGOLUsername,
-            "password": AGOLPassword,
-            "client": "referer",
-            "referer": "https://www.arcgis.com",
-            "expiration": 120,
-            "f": "json",
-        }
-    )
-
-    tokenURL = "https://www.arcgis.com/sharing/rest/generateToken?"
-    tokenUrlResponse = urlRequest(tokenURL, parameters)
-    AGOLToken = jsonObjectErrorHandling(
-        tokenUrlResponse, "token", errorMessage)
-
-    return AGOLToken
 
 
 class Python2RESTAPI:
@@ -52,8 +23,8 @@ class Python2RESTAPI:
     def layerHasPhotoAttachments(self):
         """Checks to see if an AGOL Feature Service has attachments."""
 
-        errorText = '''when trying to see if the input feature service 
-            has attachments or the input feature service does 
+        errorText = '''when trying to see if the input feature service
+            has attachments or the input feature service does
             not allow attachments.'''
 
         errorMessage = errorMessageGenerator(errorText)
@@ -89,14 +60,14 @@ class Python2RESTAPI:
             )
         return AGOLFeatureServiceName
 
-    def getFeatureServiceObjectIds(self):
+    def getObjectIDs(self):
         """Returns the ObjectIDs for each item in the AGOL Feature Service.
         it is best to use this method as ObjectIDs may not be sequential.
         for example the ObjectIDs could number 1,2,3,5,6,12,13... this
         is a result of delete field collected data after syncing
         """
 
-        errorText = '''when trying to retrieve the ObjectIds 
+        errorText = '''when trying to retrieve the ObjectIds
         for the input feature service'''
         errorMessage = errorMessageGenerator(errorText)
 
@@ -109,7 +80,7 @@ class Python2RESTAPI:
         featureServiceObjectIDs = listStringJoiner(featureServiceObjectIDs)
         return featureServiceObjectIDs
 
-    def getFeatureServiceObjectIdsWithinAreaOfInterest(
+    def getObjectIDsInAOI(
             self, areaOfInterestVerticesDictionary):
         """Returns the ObjectIDs for each item in the AGOL Feature Service that
         that fall within an end user provided area of interst.
@@ -144,8 +115,7 @@ class Python2RESTAPI:
         featureServiceObjectIDs = listStringJoiner(featureServiceObjectIDs)
         return featureServiceObjectIDs
 
-    def queryFeatureServiceObjectIDsforAttachments(
-            self, AGOLfeatureServiceOjbectIDs):
+    def queryObjectIDsForAttachments(self, AGOLfeatureServiceOjbectIDs):
         """Returns the ObjectIds for each feature in the AGOL Feature Service
         which has attachments.
         """
