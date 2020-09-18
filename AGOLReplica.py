@@ -25,7 +25,8 @@ def getStatusURLForAGOLReplica(
             "layerQueries": {
                 AGOLFeatureServiceLayerNumber:
                 {
-                    "where": "OBJECTID IN (" + AGOLFeatureServiceObjectIDs + ")"
+                    "where": "OBJECTID IN ({})".format(
+                        AGOLFeatureServiceObjectIDs)
                 }
             },
             "transportType": "esriTransportTypeUrl",
@@ -50,8 +51,8 @@ def getStatusURLForAGOLReplica(
     return featureServiceReplicaStatusUrl
 
 
-def waitForAGOLReplica(featureServiceReplicaStatusUrl,
-                                     AGOLToken):
+def waitForAGOLReplica(
+        featureServiceReplicaStatusUrl, AGOLToken):
     timer = 0
     status = json.loads(
         urllib.urlopen(

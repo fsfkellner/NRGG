@@ -132,7 +132,7 @@ def deleteFiedsFromFSVegPhotoFeatureClass(outputLocation):
         "pl_setting_id",
         "plot_number_1",
         "photo_1_text",
-        "PhotoNames",
+        "PhotoNames"
     ]
     fieldsToDelete = [
         field.name

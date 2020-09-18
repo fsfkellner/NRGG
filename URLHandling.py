@@ -21,7 +21,7 @@ def errorMessageGenerator(textForErrorMessage, traceBackError=''):
     return errorText
 
 
-def urlRequest(inputUrl, *urlParameters):
+def urlRequest(inputUrl, urlParameters=None):
     '''urlRequest(str, str(dictionary)) -> json object
     Takes input URL and optional urlencoded parameters and returns
     a urllib.urlopen() json object. If open fails
@@ -30,7 +30,7 @@ def urlRequest(inputUrl, *urlParameters):
     errorText = '''Unable to make URL request.
         Check your internet connection or input URL and try again.'''
     try:
-        urlResponse = urllib.urlopen(inputUrl, "".join(urlParameters)).read()
+        urlResponse = urllib.urlopen(inputUrl, urlParameters).read()
         return urlResponse
     except Exception as e:
         errorMessage = errorMessageGenerator(errorText, e)
