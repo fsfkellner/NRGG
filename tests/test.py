@@ -2,6 +2,8 @@
 import unittest
 # import arcpy
 import sys
+from mock import patch
+import urllib
 
 sys.path.append(r'C:\Data')
 from NRGG import FeatureClassForAGOLFiltering
@@ -46,12 +48,17 @@ AOI = FeatureClassForAGOLFiltering(AOIFilePath)
 
 class TestFSVegPhotoDowloadTools(unittest.TestCase):
 
+    def test_urlRequest(self):
+        with patch('urllib.urlopen') as mock_urllib:
+            
+
     def test_listStringJoiner(self):
         stringJoinedListFromFunction = listStringJoiner([1, 2, 3, 4])
         self.assertEqual(stringJoinedListFromFunction, '1,2,3,4')
 
     def test_errorMessageGenerator(self):
-        errorMessageFromFunction = errorMessageGenerator('test text', traceBackError='This is the Traceback')
+        errorMessageFromFunction = errorMessageGenerator(
+            'test text', traceBackError='This is the Traceback')
         self.assertEqual(testErrorMessage, errorMessageFromFunction)
 
     def test_getVerticesOfProjectedAOI(self):
