@@ -14,7 +14,7 @@ from HelperFunctions import (
     listStringJoiner,
     findDigits,
     deleteUneededFields,
-    makeNewGDBIfDoesntExist
-    findAllFeatureClasses(
+    makeNewGDBIfDoesntExist,
+    findAllFeatureClasses
 )
 from AOIHandlingForAGOL import FeatureClassForAGOLFiltering
