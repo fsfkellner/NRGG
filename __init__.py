@@ -12,6 +12,9 @@ from AGOLReplica import (
 )
 from HelperFunctions import (
     listStringJoiner,
+    findDigits,
+    deleteUneededFields,
+    makeNewGDBIfDoesntExist
+    findAllFeatureClasses(
 )
-import FSVegSpatial_WalkThroughTools
 from AOIHandlingForAGOL import FeatureClassForAGOLFiltering

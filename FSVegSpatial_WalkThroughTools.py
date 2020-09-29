@@ -5,6 +5,10 @@ import zipfile
 
 def unzipAGOLReplicaGDBAndRenameToFSVeg(
         pathOfZippedReplicaGDB, outputLocation):
+        '''Unzips file that is downloaded from AGOL and contains
+        a GDB. This tool is specific to FSVeg as the name of
+        the unzipped GDB is "FSVeg_Spatial_WT"
+        '''
     with zipfile.ZipFile(pathOfZippedReplicaGDB, "r") as zipGDB:
         zipGDB = zipfile.ZipFile(pathOfZippedReplicaGDB, "r")
         uniqueAGOLGeneratedReplicaGDBName = zipGDB.namelist()[0].split(r"/")[0]
@@ -15,6 +19,11 @@ def unzipAGOLReplicaGDBAndRenameToFSVeg(
 
 
 def renamePlotsFilesToFSVeg(outputLocation):
+    '''Uses feature class to feature class ESRI tool
+    to rename the "plot" file in the downloaded AGOL data
+    "FSVeg_Spatial_WT_Photos". Using this tool will allow for 
+    associated attachement tables to be renamed as well
+    '''
     FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
     arcpy.env.workspace = FSVegGDBPath
     # I use FC to FC here rather than rename as it allows
@@ -32,6 +41,9 @@ def renamePlotsFilesToFSVeg(outputLocation):
 
 
 def createDictOfFSVegIDsAndPlots(outputLocation):
+    '''Returns a dictionary of FSVeg data of Plot Setting ID
+    and the plot number
+    '''
     arcpy.env.workspace = outputLocation + "/FSVeg_Spatial_WT.gdb"
     cursor = arcpy.da.SearchCursor(
         "FSVeg_Spatial_WT_Photos",
@@ -50,6 +62,10 @@ def createDictOfFSVegIDsAndPlots(outputLocation):
 
 def writeAttachedPhotosMakeDictOfPhotoNames(
         outputLocation, FSVegGlobalIDDictionary):
+    '''Writes attachement photos from FSVeg AGOL data.
+    The tool creates a new folder if it doesn't exist.
+    Attachment photos are written as .jpg
+    '''
     photoFolder = os.path.join(outputLocation, 'FSVeg_Spatial_WT_Photos')
     FSVegGDBPath = os.path.join(outputLocation, 'FSVeg_Spatial_WT.gdb')
 
