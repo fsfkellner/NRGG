@@ -27,6 +27,11 @@ def findDigits(stringText):
     return textList
 
 
+def listFields(featureClass):
+    fields = [field.name for field in arcpy.ListFields(featureClass) if not field.required]
+    return fields
+
+
 def deleteUneededFields(featureClass, fieldsToKeep):
     '''Provide a list of fields to keep within the featureclass
     and all other fields that are not required will be deleted
