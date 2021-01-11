@@ -1,7 +1,3 @@
-import arcpy
-import os
-
-
 def listStringJoiner(inputList, joiner=","):
     '''listStringJoiner(sequence[list]) -> string
     Takes an input list and returns a string where each
@@ -27,45 +23,17 @@ def findDigits(stringText):
     return textList
 
 
-def listFields(featureClass):
-    fields = [field.name for field in arcpy.ListFields(featureClass) if not field.required]
-    return fields
-
-
-def deleteUneededFields(featureClass, fieldsToKeep):
-    '''Provide a list of fields to keep within the featureclass
-    and all other fields that are not required will be deleted
+def returnDuplicates(yourList):
+    '''Takes an input list and returns
+    a list of only the duplicate values
     '''
-    fieldsToDelete = [
-        field.name for field in arcpy.ListFields(featureClass)
-        if field.name not in fieldsToKeep
-        and not field.required]
-    arcpy.DeleteField_management(featureClass, fieldsToDelete)
-
-
-def makeNewGDBIfDoesntExist(folder, GDBName):
-    '''Makes a new file geodatabase if the
-    GDB does not already exist. Returns the the path
-    of the GDB
-    '''
-    if arcpy.Exists(os.path.join(folder, GDBName)):
-        pass
-    else:
-        arcpy.CreateFileGDB_management(folder, GDBName)
-
-    GDBPath = os.path.join(folder, GDBName)
-    return GDBPath
-
-
-def findAllFeatureClasses(folder):
-    '''Returns a list of all the feature classes
-    that are within the provided folder and any
-    addtional subfolders
-    '''
-    featureClasses = []
-    walk = arcpy.da.Walk(folder, datatype="FeatureClass")
-
-    for dirpath, dirnames, filenames in walk:
-        for filename in filenames:
-            featureClasses.append(os.path.join(dirpath, filename))
-    return featureClasses
+    notDuplicate = set()
+    isDuplicate = set()
+    notDuplicate_add = notDuplicate.add
+    isDuplicate_add = isDuplicate.add
+    for item in yourList:
+        if item in notDuplicate:
+            isDuplicate_add(item)
+        else:
+            notDuplicate_add(item)
+    return list(isDuplicate)

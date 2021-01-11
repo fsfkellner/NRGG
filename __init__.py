@@ -13,8 +13,17 @@ from AGOLReplica import (
 from HelperFunctions import (
     listStringJoiner,
     findDigits,
-    deleteUneededFields,
-    makeNewGDBIfDoesntExist,
-    findAllFeatureClasses
+    returnDuplicates
 )
 from AOIHandlingForAGOL import FeatureClassForAGOLFiltering
+
+from AttributeDataTools import (
+    listFields,
+    deleteUneededFields,
+    returnAllValuesFromField,
+    uniqueValuesFromFeatureClassField,
+)
+from FileManagment import (
+    makeNewGDBIfDoesntExist,
+    findAllGeospatialFiles
+)
